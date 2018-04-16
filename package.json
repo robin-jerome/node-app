@@ -1,0 +1,28 @@
+{
+  "name": "node-app",
+  "version": "1.0.0",
+  "description": "Node app server",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "Node",
+    "Helm",
+    "Kubernetes",
+    "Jenkinsfile"
+  ],
+  "author": "Robin",
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "jasmine": "^3.1.0",
+    "jasmine-console-reporter": "^3.0.0",
+    "jasmine-reporters": "^2.3.0"
+  },
+  "dependencies": {}
+}
