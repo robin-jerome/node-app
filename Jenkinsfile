@@ -11,7 +11,6 @@ podTemplate(label: label, containers: [
     containerTemplate(name: 'helm', image: 'lachlanevenson/k8s-helm:latest', command: 'cat', ttyEnabled: true)
 ],
 volumes: [
-    secretVolume(secretName: 'docker-config', mountPath: '/tmp'),
     hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
 ]) {
     node(label) {
@@ -39,12 +38,18 @@ volumes: [
         }
         stage('Build Docker Image') {
             container('docker') {
-                sh """
-                    docker build -t ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} .
-                    docker push ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}
-                    docker tag ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:latest
-                    docker push ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:latest
-                """
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', 
+                        credentialsId: 'docker-creds',
+                        usernameVariable: 'DOCKER_HUB_USER', 
+                        passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
+                    sh """
+                        docker build -t ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} .  
+                        docker login -u ${env.DOCKER_HUB_USER} -p ${env.DOCKER_HUB_PASSWORD}
+                        docker push ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}
+                        docker tag ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:latest
+                        docker push ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:latest
+                    """
+                }               
             }
         }
     }
