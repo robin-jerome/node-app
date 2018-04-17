@@ -49,7 +49,7 @@ volumes: [
                         docker tag ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:latest
                         docker push ${DOCKER_HUB_ACCOUNT}/${DOCKER_IMAGE_NAME}:latest
                     """
-                }               
+                }
             }
         }
     }
