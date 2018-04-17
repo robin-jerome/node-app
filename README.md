@@ -1,3 +1,3 @@
 # Introduction 
 
-Sample Node App
+Sample Node App with Jenkinsfile and Docker
