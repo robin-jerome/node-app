@@ -1,0 +1,48 @@
+# Based on the HPA walkthrough at k8s.io https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+
+kind: Service
+apiVersion: v1
+metadata:
+  name:  node-app-campaign
+spec:
+  selector:
+    run: node-app-campaign
+  type:  ClusterIP
+  ports:
+  - name:  http
+    port:  80
+    targetPort:  8080
+---
+#apiVersion: apps/v1 #v1.9.x
+apiVersion: extensions/v1beta1 #v1.8.x
+kind: Deployment
+metadata:
+  name: node-app-campaign
+  labels:
+    run: node-app-campaign
+spec:
+  replicas: 3
+  #if you want this deployment to manage existing replicasets
+  #specify a selector to match the labels on the existing replicasets
+  #this is now required in later api-versions
+  selector:
+    matchLabels:
+      run: node-app-campaign
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      #the maximum number of pods that can be created above the total desired number during rollout
+      maxSurge: 1
+      #the maximum number of pods that is unavailable during the rollout
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        run: node-app-campaign
+    spec:
+      containers:
+      - image: rjerome/node-app:campaign
+        imagePullPolicy: Always
+        name: node-app-campaign
+        ports:
+        - containerPort:  8080
