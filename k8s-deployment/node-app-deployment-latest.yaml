@@ -39,7 +39,7 @@ spec:
         run: node-app-latest
     spec:
       containers:
-      - image: rjerome/node-app:campaign
+      - image: rjerome/node-app:latest
         imagePullPolicy: Always
         name: node-app-latest
         ports:
