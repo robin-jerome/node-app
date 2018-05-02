@@ -24,5 +24,7 @@
     "jasmine-console-reporter": "~3.0.0",
     "jasmine-reporters": "~2.3.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "ip": "~1.1.5"
+  }
 }

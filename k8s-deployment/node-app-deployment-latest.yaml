@@ -1,0 +1,78 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name:  node-app-latest
+spec:
+  selector:
+    run: node-app-latest
+  type:  ClusterIP
+  ports:
+  - name:  http
+    port:  80
+    targetPort:  80
+---
+#apiVersion: apps/v1 #v1.9.x
+apiVersion: extensions/v1beta1 #v1.8.x
+kind: Deployment
+metadata:
+  name: node-app-latest
+  labels:
+    run: node-app-latest
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: node-app-latest
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        run: node-app-latest
+    spec:
+      containers:
+      # NodeJs application container
+      - image: rjerome/node-app:latest
+        imagePullPolicy: Always
+        name: node-app-latest
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+        ports:
+        - containerPort:  8080
+      # Service Envoy Proxy Sidecar Container
+      - image: envoyproxy/envoy-alpine:v1.6.0
+        command: 
+          - "/usr/local/bin/envoy"
+        args:
+          - "--config-path /etc/envoy/envoy.json"
+          - "--mode serve"
+          - "--service-cluster item"
+        imagePullPolicy: Always
+        name: envoy
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        volumeMounts:
+        - name: envoy
+          mountPath: /etc/envoy
+      volumes:
+      - name: envoy
+        configMap:
+          name: node-app-envoy-config
