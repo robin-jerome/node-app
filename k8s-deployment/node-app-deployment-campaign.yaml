@@ -9,7 +9,7 @@ spec:
   ports:
   - name:  http
     port:  80
-    targetPort:  8080
+    targetPort:  80
 ---
 #apiVersion: apps/v1 #v1.9.x
 apiVersion: extensions/v1beta1 #v1.8.x
@@ -20,9 +20,6 @@ metadata:
     run: node-app-campaign
 spec:
   replicas: 3
-  #if you want this deployment to manage existing replicasets
-  #specify a selector to match the labels on the existing replicasets
-  #this is now required in later api-versions
   selector:
     matchLabels:
       run: node-app-campaign
@@ -39,8 +36,44 @@ spec:
         run: node-app-campaign
     spec:
       containers:
+      # NodeJs application container
       - image: rjerome/node-app:campaign
         imagePullPolicy: Always
         name: node-app-campaign
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
         ports:
         - containerPort:  8080
+      # Service Envoy Proxy Sidecar Container
+      - image: envoyproxy/envoy-alpine:v1.6.0
+        command: 
+          - "/usr/local/bin/envoy"
+        args:
+          - "--config-path /etc/envoy/envoy.json"
+          - "--mode serve"
+        imagePullPolicy: Always
+        name: envoy
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        volumeMounts:
+        - name: envoy
+          mountPath: /etc/envoy
+      volumes:
+      - name: envoy
+        configMap:
+          name: node-app-envoy-config

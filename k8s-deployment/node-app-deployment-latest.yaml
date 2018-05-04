@@ -55,7 +55,6 @@ spec:
         args:
           - "--config-path /etc/envoy/envoy.json"
           - "--mode serve"
-          - "--service-cluster item"
         imagePullPolicy: Always
         name: envoy
         livenessProbe:
