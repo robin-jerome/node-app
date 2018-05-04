@@ -51,7 +51,7 @@ spec:
         ports:
         - containerPort:  8080
       # Service Envoy Proxy Sidecar Container
-      - image: envoyproxy/envoy-alpine:v1.6.0
+      - image: envoyproxy/envoy-alpine:latest
         command: 
           - "/usr/local/bin/envoy"
         args:
